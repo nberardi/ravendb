@@ -174,6 +174,37 @@ namespace Raven.Json.Linq
 		}
 
 #if !NET20
+
+		/// <summary>
+		/// Reads the next JSON token from the stream as a <see cref="String"/>.
+		/// </summary>
+		/// <returns>A <see cref="String"/>.</returns>
+		public override string ReadAsString()
+		{
+			Read();
+
+			if (TokenType == JsonToken.String)
+				return (string)Value;
+
+			if (TokenType == JsonToken.Null)
+				return null;
+
+			if (ReaderIsSerializerInArray())
+				return null;
+
+			throw CreateReaderException(this, "Error reading string. Expected string but got {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
+		}
+
+		/// <summary>
+		/// Reads the next JSON token from the stream as a <see cref="Nullable{DateTime}"/>.
+		/// </summary>
+		/// <returns>A <see cref="Nullable{DateTime}"/>.</returns>
+		public override DateTime? ReadAsDateTime()
+		{
+			var dt = ReadAsDateTimeOffset();
+			return dt.HasValue ? dt.Value.LocalDateTime : (DateTime?)null;
+		}
+
 		/// <summary>
 		/// Reads the next JSON token from the stream as a <see cref="Nullable{DateTimeOffset}"/>.
 		/// </summary>
