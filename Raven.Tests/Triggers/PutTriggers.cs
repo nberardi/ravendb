@@ -50,7 +50,7 @@ namespace Raven.Tests.Triggers
 			db.Put("abc", null, RavenJObject.Parse("{'name': 'abc'}"), new RavenJObject(), null);
 
 			var actualString = db.Get("abc", null).DataAsJson.ToString(Formatting.None);
-			Assert.Contains(@"946684800000", actualString);
+			Assert.Contains(@"2000-01-01T00:00:00Z", actualString);
 		}
 
 		[Fact]

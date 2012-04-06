@@ -201,8 +201,32 @@ namespace Raven.Json.Linq
 		/// <returns>A <see cref="Nullable{DateTime}"/>.</returns>
 		public override DateTime? ReadAsDateTime()
 		{
-			var dt = ReadAsDateTimeOffset();
-			return dt.HasValue ? dt.Value.LocalDateTime : (DateTime?)null;
+			Read();
+
+			if (TokenType == JsonToken.Date)
+				return (DateTime)Value;
+
+			if (TokenType == JsonToken.Null)
+				return null;
+
+			DateTime dt;
+			if (TokenType == JsonToken.String)
+			{
+				if (DateTime.TryParse((string)Value, Culture, DateTimeStyles.None, out dt))
+				{
+					SetToken(JsonToken.Date, dt);
+					return dt;
+				}
+				else
+				{
+					throw CreateReaderException(this, "Could not convert string to DateTime: {0}.".FormatWith(CultureInfo.InvariantCulture, Value));
+				}
+			}
+
+			if (ReaderIsSerializerInArray())
+				return null;
+
+			throw CreateReaderException(this, "Error reading date. Expected date but got {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
 		}
 
 		/// <summary>
@@ -239,7 +263,7 @@ namespace Raven.Json.Linq
 			if (ReaderIsSerializerInArray())
 				return null;
 
-			throw CreateReaderException(this, "Error reading date. Expected bytes but got {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
+			throw CreateReaderException(this, "Error reading date. Expected date but got {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
 		}
 #endif
 
